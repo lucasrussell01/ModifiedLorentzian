@@ -101,17 +101,14 @@ class analytical:
             # derivative of A wrt l_0
             dAdl0 = -self.c_g/((self.nu-1)*self.w_g)
             # derivative of B wrt l_0
-            nu=self.nu
-            c_g = self.c_g
-            w_g = self.w_g
-            CB1 = 2/(nu*(nu-1))
-            CB2 = -CB1*np.sign(al)*c_g/(w_g*alpha**(2*nu-4))
-            dB1dl0 = CB2*(2*alpha**(2*nu-3)-beta**nu *(nu-2)*alpha**(nu-3))
-            dA2dl0 = -2*A*c_g/(w_g*(nu-1))
+            CB1 = 2/(self.nu*(self.nu-1))
+            CB2 = -CB1*np.sign(al)*self.c_g/(self.w_g*alpha**(2*self.nu-4))
+            dB1dl0 = CB2*(2*alpha**(2*self.nu-3)-beta**self.nu *(self.nu-2)*alpha**(self.nu-3))
+            dA2dl0 = -2*A*self.c_g/(self.w_g*(self.nu-1))
             dBdl0 = (dB1dl0 - dA2dl0)/(2*B) 
             # derivative of C wrt l_0
-            CC1 = (2*np.pi*c)/(nu*(nu-1))
-            dCdl0 = -CC1*(1/B**2 * dBdl0*alpha**(2-nu)+1/B * (2-nu) *alpha**(1-nu)*np.sign(al)*c_g/w_g)
+            CC1 = (2*np.pi*c)/(self.nu*(self.nu-1))
+            dCdl0 = -CC1*(1/B**2 * dBdl0*alpha**(2-self.nu)+1/B * (2-self.nu) *alpha**(1-self.nu)*np.sign(al)*self.c_g/self.w_g)
             # Combination of all elements
             dIdl0 = self.phi*dCdl0*K+C_f*self.phi*(dKdA*dAdl0+dKdB*dBdl0)
             dIdl0[peak] = 0  # return 0 for peak as each side tends to +/- infty
