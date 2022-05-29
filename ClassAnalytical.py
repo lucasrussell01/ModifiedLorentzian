@@ -98,45 +98,49 @@ class analytical:
         peak = value_to_index(alpha, 0)
 
         if (parameter == "l_0"):  # derivative wrt l_0
-            # dIdl0 = np.zeros(len(self.variable))
             # derivative of A wrt l_0
             dAdl0 = -self.c_g/((self.nu-1)*self.w_g)
             # derivative of B wrt l_0
-            B_1 = -(2*A*self.c_g/self.w_g+2*self.c_g*A/((self.nu-1)*self.w_g)-(2*(2-self.nu)*self.c_g*alpha**(1-self.nu)*(alpha**self.nu+beta**self.nu)*np.sign(al))/((self.nu-1)*self.nu*self.w_g))
-            dBdl0 = B_1/2*B
+            nu=self.nu
+            c_g = self.c_g
+            w_g = self.w_g
+            CB1 = 2/(nu*(nu-1))
+            CB2 = -CB1*np.sign(al)*c_g/(w_g*alpha**(2*nu-4))
+            dB1dl0 = CB2*(2*alpha**(2*nu-3)-beta**nu *(nu-2)*alpha**(nu-3))
+            dA2dl0 = -2*A*c_g/(w_g*(nu-1))
+            dBdl0 = (dB1dl0 - dA2dl0)/(2*B) 
             # derivative of C wrt l_0
-            C_1 = -(np.sqrt(np.pi)*2*c_nu*(2-self.nu)*self.c_g**(self.nu+1)*self.w_g**(-self.nu-1)*alpha**(1-self.nu)*np.sign(al))
-            C_2 = -(np.sqrt(np.pi)*c_nu*self.c_g**self.nu*self.w_g**(-self.nu)*alpha**(2-self.nu)*B_1)
+            CC1 = (2*np.pi*c)/(nu*(nu-1))
+            dCdl0 = -CC1*(1/B**2 * dBdl0*alpha**(2-nu)+1/B * (2-nu) *alpha**(1-nu)*np.sign(al)*c_g/w_g)
             # Combination of all elements
-            dCdl0 = C_1/(self.nu*(self.nu-1)*B)+C_2/(self.nu*(self.nu-1)*B**3)
             dIdl0 = self.phi*dCdl0*K+C_f*self.phi*(dKdA*dAdl0+dKdB*dBdl0)
             dIdl0[peak] = 0  # return 0 for peak as each side tends to +/- infty
             return dIdl0
         elif parameter == "w_g":  # derivative wrt w_g
             # derivative of A wrt w_g
-            dAdwg = -A/self.w_g
+            dAdwg = -al/((self.nu-1)*self.w_g)
             # derivative of B wrt w_g
-            B_1 = -(2*pos*(2-self.nu)*self.c_g*alpha**(1-self.nu)*(alpha**self.nu+beta**self.nu))/((self.nu-1)*self.nu*self.w_g**2)
-            B_2 = (2*alpha**(2-self.nu)*(-(self.nu*self.c_g*pos*alpha**(self.nu-1))/self.w_g**2)-(self.nu*self.c_g*self.w_l*beta**(self.nu-1))/2*self.w_g**2)/((self.nu-1)*self.nu)
-            dBdwg = (2*A**2/self.w_g+B_1+B_2)/2*B
+            CB1 = 2/(self.nu*(self.nu-1))
+            CB2 = -CB1/(self.w_g*alpha**(2*self.nu-4))
+            dB1dwg = CB2*(self.nu*alpha**(self.nu-2)*(alpha**(self.nu-1)*np.sign(al)*al + beta**self.nu)
+                            -(alpha**self.nu+beta**self.nu)*(self.nu-2)*alpha**(self.nu-3)*np.sign(al)*al)
+            dA2dwg = 2*A*dAdwg
+            dBdwg = (dB1dwg - dA2dwg)/(2*B) 
             # derivative of C wrt w_g
-            C_1 = -(2*c_nu*np.sqrt(np.pi)*pos*(2-self.nu)*self.c_g**(self.nu+1)*self.w_g**(-self.nu-2)*alpha**(1-self.nu))
-            C_2 = -2*c_nu*np.sqrt(np.pi)*self.c_g**self.nu*self.w_g**(-self.nu-1)*alpha**(2-self.nu)
-            C_31 = -(2*pos*(2-self.nu)*self.c_g*alpha**(1-self.nu)*(alpha**self.nu+beta**self.nu))/((self.nu-1)*self.nu*self.w_g**2)
-            C_32 = -(2*alpha**(2-self.nu)*(alpha**self.nu+beta**self.nu))/((self.nu-1)*self.w_g)
-            C_3 = -(np.sqrt(np.pi)*c_nu*self.c_g**self.nu*self.w_g**(-self.nu)*alpha**(2-self.nu)*(2*A**2/self.w_g+C_31+C_32))
-            dCdwg = C_1/(self.nu*(self.nu-1)*B)+C_2/((self.nu-1)*B)+C_3/(self.nu*(self.nu-1)*B**3)
+            CC1 = 2*np.pi/(self.nu*(self.nu-1))
+            CC2 = CC1*c/(B**2*alpha**(2*self.nu-4))
+            dCdwg = CC2*(-self.nu*B*alpha**(self.nu-2)/self.w_g - dBdwg*alpha**(self.nu-2) +
+                            B*(self.nu-2)*alpha**(self.nu-3)*np.sign(al)*al/self.w_g)
             # Combination of all elements
             dIdwg = self.phi*dCdwg*K+C_f*self.phi*(dKdA*dAdwg + dKdB*dBdwg)
             dIdwg[peak] = dIdwg[peak-1]+(dIdwg[peak-1]-dIdwg[peak-2])  # return previous value + previous gradient for peak
             return(dIdwg)
         elif parameter == "w_l":  # derivative wrt w_l
             # derivative of B wrt w_l
-            dBdwl = (self.c_g*alpha**(2-self.nu)*beta**(self.nu-1))/(2*(self.nu-1)*self.w_g*B)
+            dBdwl = self.c_g*beta**(self.nu-1)/(2*(self.nu-1)*self.w_g*B*alpha**(self.nu-2))
             # derivative of C wrt w_l
-            C_1 = (np.sqrt(np.pi)*2*c_nu*self.c_g**self.nu*self.w_g**(-self.nu)*alpha**(2-self.nu))
-            C_2 = -(np.sqrt(np.pi)*c_nu*self.c_g**(self.nu+1)*self.w_g**(-self.nu-1)*alpha**(4-2*self.nu)*beta**(self.nu-1))
-            dCdwl = C_1/(self.w_l*self.nu*B)+C_2/(self.nu*(self.nu-1)**2*B**3)
+            CC1 = 2*np.pi/(self.nu*(self.nu-1)*alpha**(self.nu-2))
+            dCdwl = CC1/B**2 * ((self.nu-1)*c/self.w_l*B - dBdwl*c)
             # Combination of all elements
             dIdwl = self.phi*dCdwl*K+C_f*self.phi*(dKdB*dBdwl)
             dIdwl[peak] = dIdwl[peak-1]+(dIdwl[peak-1]-dIdwl[peak-2])  # return previous value + previous gradient for peak
